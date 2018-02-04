@@ -20,23 +20,18 @@ export default () => {
       {
         email: 'mb@mattblack.io',
         password: 'password',
-        firstname: 'Matt',
-        lastname: 'Black',
+        username: 'mb',
         roles: ['admin'],
       },
     ]
 
     users.forEach(user => {
-      console.log(`Add user ${user.email} to the database.`)
+      console.log(`Add user ${user.username} to the database.`)
 
       const userId = Accounts.createUser({
+        username: user.username,
         email: user.email,
         password: user.password,
-        profile: {
-          firstname: user.firstname,
-          lastname: user.lastname,
-          name: `${user.firstname} ${user.lastname}`,
-        },
         roles: user.roles,
       })
 

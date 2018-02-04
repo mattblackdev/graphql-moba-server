@@ -8,7 +8,7 @@
   "parserOptions": {
     "allowImportExportEverywhere": true
   },
-  "plugins": ["prettier", "react"],
+  "plugins": ["react"],
   "settings": {
     "import/resolver": "meteor"
   },

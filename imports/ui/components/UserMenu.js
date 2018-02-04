@@ -14,6 +14,16 @@ class UserMenu extends Component {
     anchorEl: null,
     open: false,
   }
+
+  handleClose = () => {
+    this.setState({ anchorEl: null, open: false })
+  }
+
+  handleLogout = () => {
+    this.handleClose()
+    Meteor.logout()
+  }
+
   render() {
     return (
       <Fragment>
@@ -22,10 +32,10 @@ class UserMenu extends Component {
           onClick={e =>
             this.setState({ anchorEl: e.currentTarget, open: true })
           }
-          color="contrast"
           ref={ref => {
             this.anchorEl = ref
-          }}>
+          }}
+        >
           <AccountCircle />
         </IconButton>
         <Menu
@@ -39,8 +49,9 @@ class UserMenu extends Component {
             horizontal: 'left',
           }}
           open={this.state.open}
-          onRequestClose={() => this.setState({ anchorEl: null, open: false })}>
-          <MenuItem onClick={() => Meteor.logout()}>Logout</MenuItem>
+          onClose={this.handleClose}
+        >
+          <MenuItem onClick={this.handleLogout}>Logout</MenuItem>
         </Menu>
       </Fragment>
     )

@@ -2,6 +2,6 @@
   "editor.formatOnSave": true,
   "prettier.semi": false,
   "prettier.singleQuote": true,
-  "prettier.jsxBracketSameLine": true,
+  "prettier.jsxBracketSameLine": false,
   "prettier.trailingComma": "all"
 }

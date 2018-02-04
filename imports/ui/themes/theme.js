@@ -1,9 +1,11 @@
 import { createMuiTheme } from 'material-ui/styles'
 
+const gameFontFamily = '"Supermercado One", cursive'
 const fontWeightMedium = 500
 
 export default createMuiTheme({
   palette: {
+    type: 'dark',
     primary: {
       light: '#6d6d6d',
       main: '#424242',
@@ -18,14 +20,24 @@ export default createMuiTheme({
     },
   },
   typography: {
-    // Use the system font.
-    fontFamily: 'Roboto, sans-serif',
     fontWeightMedium,
+    display1: {
+      fontFamily: gameFontFamily,
+    },
+    display2: {
+      fontFamily: gameFontFamily,
+    },
+    display3: {
+      fontFamily: gameFontFamily,
+    },
+    display4: {
+      fontFamily: gameFontFamily,
+    },
     body1: {
       fontWeight: fontWeightMedium,
     },
     button: {
-      fontFamily: '"Supermercado One", cursive',
+      fontFamily: gameFontFamily,
       textTransform: 'initial',
       fontWeight: 400,
       fontSize: '1.25rem',

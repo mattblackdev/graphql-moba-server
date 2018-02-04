@@ -31,7 +31,7 @@ function Header(props) {
         <span style={{ flex: 1 }}>
           <BrandButton />
         </span>
-        {user ? <UserMenu displayText={user.profile.name} /> : <AuthButtons />}
+        {user ? <UserMenu displayText={user.username} /> : <AuthButtons />}
       </Toolbar>
     </AppBar>
   )
