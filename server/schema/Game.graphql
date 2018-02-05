@@ -1,0 +1,103 @@
+type Game {
+  _id: ID!
+  teams: [Team]!
+  duration: Int
+  startTime: String
+  endTime: String
+}
+
+type Team {
+  _id: ID!
+  color: String
+  players: [Player]!
+  base: Base!
+  kills: Int
+  xp: Int
+  gold: Int
+}
+
+type Player {
+  _id: ID!
+  team: Team!
+  class: Class!
+  location: Location!
+  xp: Int!
+  level: Int!
+  health: Int!
+  maxHealth: Int!
+  attack: Int!
+  defense: Int!
+  speed: Int!
+  kills: Int!
+  gold: Int!
+  armor: Armor
+  weapon: Weapon
+  potions: [Potion]
+  unlocked: [String]
+  cooldowns: [Cooldown]
+}
+
+type Class {
+  _id: ID!
+  name: String!
+  description: String!
+  skills: [Skill]!
+  health: Rating!
+  attack: Rating!
+  defense: Rating!
+  speed: Rating!
+}
+
+enum Rating {
+  TERRIBLE
+  POOR
+  DECENT
+  GREAT
+  SPECTACULAR
+}
+
+type Skill {
+  _id: ID!
+  class: [Class]!
+  name: String!
+  description: String!
+  cooldownDuration: Int!
+}
+
+type Location {
+  _id: ID!
+  name: String!
+}
+
+type Armor {
+  _id: ID!
+  level: Int!
+  defense: Int!
+  cost: Int!
+}
+
+type Weapon {
+  _id: ID!
+  level: Int!
+  attack: Int!
+  cost: Int!
+}
+
+type Potion {
+  _id: ID!
+  name: String!
+  health: Int!
+  cost: Int!
+}
+
+type Cooldown {
+  _id: ID!
+  skill: [Skill]!
+  endTime: String!
+}
+
+type Base {
+  _id: ID!
+  team: Team!
+  health: Int!
+}
