@@ -1,6 +1,12 @@
 import { Mongo } from 'meteor/mongo'
 
-export const Items = new Mongo.Collection('items')
-export const Players = new Mongo.Collection('players')
-export const Classes = new Mongo.Collection('classes')
-export const Games = new Mongo.Collection('games')
+function c(name) {
+  return new Mongo.Collection(name)
+}
+
+export const Games = c('games')
+export const Players = c('players')
+export const Classes = c('classes')
+export const Skills = c('skills')
+export const Items = c('items')
+export const Locations = c('locations')

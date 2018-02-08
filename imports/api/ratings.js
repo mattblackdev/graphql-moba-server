@@ -1,0 +1,13 @@
+const TERRIBLE = 'TERRIBLE'
+const POOR = 'POOR'
+const DECENT = 'DECENT'
+const GREAT = 'GREAT'
+const SPECTACULAR = 'SPECTACULAR'
+
+export default {
+  TERRIBLE,
+  POOR,
+  DECENT,
+  GREAT,
+  SPECTACULAR,
+}

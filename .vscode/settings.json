@@ -3,5 +3,5 @@
   "prettier.semi": false,
   "prettier.singleQuote": true,
   "prettier.jsxBracketSameLine": false,
-  "prettier.trailingComma": "all"
+  "prettier.trailingComma": "es5"
 }

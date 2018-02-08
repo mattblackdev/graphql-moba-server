@@ -23,19 +23,12 @@
   ],
   "rules": {
     "import/prefer-default-export": "off",
+    "function-paren-newline": "off",
+    "comma-dangle": "off",
     "arrow-parens": "off",
     "semi": "off",
     "react/prop-types": 0,
     "react/no-direct-mutation-state": 0,
-    "react/no-find-dom-node": 0,
-    "no-unused-vars": [
-      "error",
-      {
-        "vars": "all",
-        "args": "after-used",
-        "ignoreRestSiblings": true,
-        "varsIgnorePattern": "^_"
-      }
-    ]
+    "react/no-find-dom-node": 0
   }
 }

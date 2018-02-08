@@ -5,9 +5,7 @@ import { makeExecutableSchema } from 'graphql-tools'
 import cors from 'cors'
 import typeDefs from './schema'
 import resolvers from './resolvers'
-import seed from './seed'
-
-seed()
+import './seed'
 
 // Load all accounts related resolvers and type definitions into graphql-loader
 initAccounts({

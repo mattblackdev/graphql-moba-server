@@ -4,6 +4,7 @@ type Game {
   duration: Int
   startTime: String
   endTime: String
+  locations: [Location]
 }
 
 type Team {
@@ -58,15 +59,16 @@ enum Rating {
 
 type Skill {
   _id: ID!
-  class: [Class]!
   name: String!
+  classes: [Class]!
   description: String!
-  cooldownDuration: Int!
+  cooldown: Int!
 }
 
 type Location {
   _id: ID!
   name: String!
+  players: [Player]
 }
 
 type Armor {
@@ -98,6 +100,7 @@ type Cooldown {
 
 type Base {
   _id: ID!
+  location: Location!
   team: Team!
   health: Int!
 }
