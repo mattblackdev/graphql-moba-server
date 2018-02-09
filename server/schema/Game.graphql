@@ -1,6 +1,8 @@
 type Game {
   _id: ID!
+  name: String
   teams: [Team]!
+  players: [Player]!
   duration: Int
   startTime: String
   endTime: String

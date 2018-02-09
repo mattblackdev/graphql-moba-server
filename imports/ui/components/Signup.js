@@ -54,7 +54,7 @@ const Signup = props => (
         }}
         onSubmit={(
           values,
-          { setSubmitting, setErrors /* setValues and other goodies */ },
+          { setSubmitting, setErrors /* setValues and other goodies */ }
         ) => {
           Accounts.createUser(
             {
@@ -70,10 +70,8 @@ const Signup = props => (
                 } else {
                   setErrors({ server: error.reason })
                 }
-              } else {
-                props.history.push('/player')
               }
-            },
+            }
           )
         }}
         render={({

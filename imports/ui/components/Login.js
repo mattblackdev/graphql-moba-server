@@ -47,7 +47,7 @@ const Login = props => (
         }}
         onSubmit={(
           values,
-          { setSubmitting, setErrors /* setValues and other goodies */ },
+          { setSubmitting, setErrors /* setValues and other goodies */ }
         ) => {
           Meteor.loginWithPassword(values.username, values.password, error => {
             setSubmitting(false)
@@ -57,8 +57,6 @@ const Login = props => (
               } else {
                 setErrors({ server: error.reason })
               }
-            } else {
-              props.history.push('/player')
             }
           })
         }}

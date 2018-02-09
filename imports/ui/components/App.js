@@ -1,10 +1,10 @@
-import { Meteor } from 'meteor/meteor'
-import { withTracker } from 'meteor/react-meteor-data'
 import React, { Fragment } from 'react'
 import { Switch, Route, Redirect } from 'react-router-dom'
 import { MuiThemeProvider } from 'material-ui/styles'
 import Reboot from 'material-ui/Reboot'
+import Typography from 'material-ui/Typography'
 
+import withUser from '../trackers/withUser'
 import theme from '../themes/theme'
 import Header from './Header'
 import Home from './Home'
@@ -19,21 +19,23 @@ function App(props) {
       <Reboot />
       <Header user={user} />
       <Switch>
-        <Route exact path="/" component={Home} />
-        {user ? (
-          <Redirect to="/" />
-        ) : (
-          <Fragment>
-            <Route path="/login" component={Login} />
-            <Route path="/signup" component={Signup} />
-          </Fragment>
-        )}
+        <Route exact path="/" render={() => <Home {...props} />} />
+        <Route
+          path="/login"
+          render={routeProps =>
+            user ? <Redirect to="/" /> : <Login {...routeProps} />
+          }
+        />
+        <Route
+          path="/signup"
+          render={routeProps =>
+            user ? <Redirect to="/" /> : <Signup {...routeProps} />
+          }
+        />
         <Route path="/" component={NotFound} />
       </Switch>
     </MuiThemeProvider>
   )
 }
 
-export default withTracker(() => ({
-  user: Meteor.user(),
-}))(App)
+export default withUser(App)

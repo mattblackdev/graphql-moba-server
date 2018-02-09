@@ -7,6 +7,8 @@ import typeDefs from './schema'
 import resolvers from './resolvers'
 import './seed'
 
+import '/imports/api/collections'
+
 // Load all accounts related resolvers and type definitions into graphql-loader
 initAccounts({
   loginWithFacebook: false,
@@ -30,5 +32,5 @@ createApolloServer(
       graphQLServer.use(cors())
     },
     graphiql: true,
-  },
+  }
 )

@@ -18,7 +18,11 @@ const AuthButtons = withRouter(({ history }) => (
 ))
 
 const BrandButton = withRouter(({ history }) => (
-  <Button type="title" color="inherit" onClick={() => history.push('/')}>
+  <Button
+    style={{ marginLeft: -16 }}
+    color="inherit"
+    onClick={() => history.push('/')}
+  >
     GraphQ League
   </Button>
 ))

@@ -24,6 +24,7 @@
   "rules": {
     "import/prefer-default-export": "off",
     "function-paren-newline": "off",
+    "no-confusing-arrow": "off",
     "comma-dangle": "off",
     "arrow-parens": "off",
     "semi": "off",

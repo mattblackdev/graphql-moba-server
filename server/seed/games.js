@@ -1,4 +1,5 @@
-import { Classes, Skills, Items } from '/imports/api/collections'
+import { Classes, Skills, Items, Games } from '/imports/api/collections'
+import { Game } from '/imports/api/classes'
 import Ratings from '/imports/api/ratings'
 
 const skills = [
@@ -39,4 +40,10 @@ export default () => {
   upsert(classes, Classes)
   console.log('seeding skills...')
   upsert(skills, Skills)
+  console.log('seeding game...')
+  Games.remove({})
+  const game = new Game()
+  game.create('Test Game', 30, (err, result) => {
+    console.log('results', err, result)
+  })
 }

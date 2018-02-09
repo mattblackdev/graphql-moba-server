@@ -22,3 +22,6 @@ accounts-password@1.5.0
 orionsoft:graphql-compiler
 swydo:ddp-apollo
 react-meteor-data
+alanning:roles
+mdg:validated-method
+jagi:astronomy
