@@ -68,6 +68,11 @@ const Player = Astro.Class.create({
     //   default: () => [],
     // },
   },
+  helpers: {
+    getUser() {
+      return Meteor.users.findOne(this._id)
+    },
+  },
 })
 
 const Team = Astro.Class.create({
@@ -89,6 +94,15 @@ const Team = Astro.Class.create({
 //   collection
 // })
 
+export const GameStatus = Astro.Enum.create({
+  name: 'Game Status',
+  identifiers: {
+    WAITING: 'WAITING',
+    STARTED: 'STARTED',
+    FINISHED: 'FINISHED',
+  },
+})
+
 export const Game = Astro.Class.create({
   name: 'Game',
   collection: Games,
@@ -101,6 +115,50 @@ export const Game = Astro.Class.create({
     endTime: { type: Date, optional: true },
     // locations: { type: [String], default: () => [] }, // FK
   },
+  helpers: {
+    getStatus() {
+      if (!this.startTime) {
+        return GameStatus.WAITING
+      } else if (!this.endTime) {
+        return GameStatus.STARTED
+      }
+      return GameStatus.FINISHED
+    },
+    isLocked() {
+      return !!this.startTime
+    },
+    throwIfLocked(operationName) {
+      if (this.isLocked()) {
+        throw new Meteor.Error(
+          'NOOP',
+          `Operation: ${operationName} can not be performed on game: ${
+            this.name
+          } ${this._id} because it has already started.`
+        )
+      }
+    },
+    playersInLobby() {
+      return this.players.filter(player => !player.teamId)
+    },
+    playersOnTeam(teamId) {
+      return this.players.filter(player => player.teamId === teamId)
+    },
+    getUserPlayer() {
+      return this.players.find(player => player._id === Meteor.userId())
+    },
+    getTeam(teamId) {
+      const team = this.teams.find(t => teamId === t._id)
+      if (!team) {
+        throw new Error(`Could not find team: ${teamId} for game: ${this._id}`)
+      }
+      return team
+    },
+    getPlayer(userId) {
+      const player = this.players.find(p => p._id === userId)
+      if (!player) throw new Error(`User is not a player of game ${this._id}`)
+      return player
+    },
+  },
   meteorMethods: {
     create(name, duration) {
       if (name) this.name = name
@@ -108,16 +166,62 @@ export const Game = Astro.Class.create({
       return this.save()
     },
     start() {
+      this.throwIfLocked('Start game')
       this.startTime = new Date()
       return this.save()
     },
+    join() {
+      this.throwIfLocked('Join game')
+      const userId = getUserId()
+      Meteor.users.update(userId, { $set: { gameId: this._id } })
+      this.players.push(new Player({ _id: userId }))
+      return this.save()
+    },
     addTeam(color) {
-      // const userId = getUserId()
-      // const player = new Player({ _id: userId })
+      this.throwIfLocked('Add team')
       const team = new Team({ color })
       this.teams.push(team)
-      console.log('adding team', this)
       return this.save()
+    },
+    joinTeam(teamId) {
+      this.getTeam(teamId) // check team exists on this game
+      this.throwIfLocked('Join team')
+      let player = this.getUserPlayer()
+      if (!player) {
+        const userId = getUserId()
+        Meteor.users.update(userId, { $set: { gameId: this._id } })
+        player = new Player({ _id: userId, teamId })
+        this.players.push(player)
+      } else {
+        player.teamId = teamId
+      }
+      return this.save()
+    },
+    leaveTeam() {
+      const player = this.getUserPlayer()
+      player.teamId = null
+      return this.save()
+    },
+    disbandTeam(teamId) {
+      this.getTeam(teamId) // check team exists on this game
+      // if (this.isLocked()) {
+      //   team.setForfeit()
+      // }
+      this.playersOnTeam(teamId).forEach(player => {
+        player.teamId = null
+      })
+      this.teams = this.teams.filter(team => team._id !== teamId)
+      return this.save()
+    },
+    leaveGame() {
+      const userId = getUserId()
+      this.getPlayer(userId) // check player exists on this game
+      // if (this.isLocked()) {
+      //   player.setForfeit()
+      // }
+      this.players = this.players.filter(p => p._id !== userId)
+      Meteor.users.update(userId, { $set: { gameId: null } })
+      this.save()
     },
   },
 })

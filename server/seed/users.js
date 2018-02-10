@@ -20,7 +20,10 @@ export default () => {
 
   users.forEach(user => {
     const userExists = Meteor.users.findOne({ username: user.username })
-    if (userExists) return
+    if (userExists) {
+      Meteor.users.update(userExists._id, { $set: { gameId: null } })
+      return
+    }
 
     console.log(`insert user: ${user.username}`)
     const userId = Accounts.createUser(user)

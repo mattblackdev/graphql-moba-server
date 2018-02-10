@@ -1,8 +1,7 @@
-import React, { Fragment } from 'react'
+import React from 'react'
 import { Switch, Route, Redirect } from 'react-router-dom'
 import { MuiThemeProvider } from 'material-ui/styles'
 import Reboot from 'material-ui/Reboot'
-import Typography from 'material-ui/Typography'
 
 import withUser from '../trackers/withUser'
 import theme from '../themes/theme'
