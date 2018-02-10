@@ -22,6 +22,7 @@ import capitilize from '/imports/utils/capitilize'
 import { GameStatus } from '/imports/api/classes'
 import Interval from './Interval'
 import TeamDialog from './TeamDialog'
+import ClassSelectionDialog from './ClassSelectionDialog'
 
 function GameStatusBar(props) {
   const { game } = props
@@ -101,8 +102,11 @@ const Teams = withStyles(theme => ({
 
 function PlayerChip(props) {
   const { player } = props
-  const user = player.getUser()
-  return <Chip label={user && user.username} style={{ margin: 8 }} />
+  const { username } = player.getUser()
+  const clazzName = player.class ? `: ${player.class.name}` : ''
+
+  const label = `${username}${clazzName}`
+  return <Chip label={label} style={{ margin: 8 }} />
 }
 
 function Lobby(props) {
@@ -144,7 +148,10 @@ function Game(props) {
         {!props.user.gameId &&
           !game.startTime && <Button onClick={() => game.join()}>Join</Button>}
         {props.user.gameId === game._id && (
-          <Button onClick={() => game.leaveGame()}>Leave</Button>
+          <Fragment>
+            <Button onClick={() => game.leaveGame()}>Leave</Button>
+            {!game.isLocked() && <ClassSelectionDialog {...props} />}
+          </Fragment>
         )}
       </CardActions>
     </Card>

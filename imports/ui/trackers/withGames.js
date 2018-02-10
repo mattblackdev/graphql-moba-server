@@ -1,10 +1,14 @@
 import { Meteor } from 'meteor/meteor'
 import { withTracker } from 'meteor/react-meteor-data'
 import { Roles } from 'meteor/alanning:roles'
-import { Game } from '/imports/api/classes'
+import { Game, Class, Skill } from '/imports/api/classes'
 
 export default withTracker(({ user }) => {
+  const clazzesSub = Meteor.subscribe('classes')
+  const skillsSub = Meteor.subscribe('skills')
   const gamesSub = Meteor.subscribe('allGames')
+  const clazzes = Class.find().fetch()
+  const skills = Skill.find().fetch()
   const games = Game.find()
     .fetch()
     .sort((a, b) => {
@@ -29,7 +33,11 @@ export default withTracker(({ user }) => {
   return {
     ...props,
     loggingIn: Meteor.loggingIn(),
+    classesReady: clazzesSub.ready(),
+    skillsReady: skillsSub.ready(),
     gamesReady: gamesSub.ready(),
+    clazzes,
+    skills,
     games,
   }
 })

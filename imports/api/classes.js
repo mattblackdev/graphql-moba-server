@@ -4,7 +4,7 @@ import * as Astro from 'meteor/jagi:astronomy'
 import { Roles } from 'meteor/alanning:roles'
 import { DDP } from 'meteor/ddp-client'
 
-import { Games, Classes } from './collections'
+import { Games, Classes, Skills } from './collections'
 
 function getUserId() {
   // eslint-disable-next-line no-underscore-dangle
@@ -16,7 +16,43 @@ const idField = {
   default: () => new Mongo.ObjectID().valueOf(),
 }
 
-// const Class = Astro.Class.create({})
+export const Rating = Astro.Enum.create({
+  name: 'Rating',
+  identifiers: {
+    TERRIBLE: 'TERRIBLE',
+    POOR: 'POOR',
+    DECENT: 'DECENT',
+    GREAT: 'GREAT',
+    SPECTACULAR: 'SPECTACULAR',
+  },
+})
+
+export const Skill = Astro.Class.create({
+  name: 'Skill',
+  collection: Skills,
+  fields: {
+    _id: String,
+    name: String,
+    description: String,
+    classIds: [String],
+    cooldown: Number,
+  },
+})
+
+export const Class = Astro.Class.create({
+  name: 'Class',
+  collection: Classes,
+  fields: {
+    _id: String,
+    name: String,
+    description: String,
+    skillIds: [String], // ref
+    health: Rating,
+    attack: Rating,
+    defense: Rating,
+    speed: Rating,
+  },
+})
 
 const zeroField = {
   type: Number,
@@ -41,10 +77,10 @@ const Player = Astro.Class.create({
       type: String,
       optional: true,
     },
-    // class: {
-    //   type: Class,
-    //   optional: true,
-    // },
+    class: {
+      type: Class,
+      optional: true,
+    },
     // location: {
     //   type: Location,
     //   optional: true,
@@ -80,12 +116,10 @@ const Team = Astro.Class.create({
   fields: {
     _id: idField,
     color: String,
-    // players: [Player],
     // base: {
     //   type: Base,
     //   optional: true,
     // },
-    // kills: zeroField,
   },
 })
 
@@ -222,6 +256,11 @@ export const Game = Astro.Class.create({
       this.players = this.players.filter(p => p._id !== userId)
       Meteor.users.update(userId, { $set: { gameId: null } })
       this.save()
+    },
+    setClass(clazzId) {
+      const player = this.getUserPlayer()
+      player.class = Class.findOne(clazzId)
+      return this.save()
     },
   },
 })

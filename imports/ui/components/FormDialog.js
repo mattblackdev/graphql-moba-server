@@ -6,12 +6,14 @@ import Dialog, {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  withMobileDialog,
 } from 'material-ui/Dialog'
 import Button from 'material-ui/Button'
 
 class FormDialog extends Component {
   static propTypes = {
     opener: PropTypes.func.isRequired,
+    fullScreen: PropTypes.bool.isRequired,
   }
 
   state = {
@@ -63,7 +65,7 @@ class FormDialog extends Component {
     return (
       <Fragment>
         {this.props.opener(this.handleOpen)}
-        <Dialog open={open}>
+        <Dialog open={open} fullScreen={this.props.fullScreen}>
           <DialogTitle>{title}</DialogTitle>
           <Formik
             validationSchema={validationSchema}
@@ -97,4 +99,4 @@ class FormDialog extends Component {
   }
 }
 
-export default FormDialog
+export default withMobileDialog()(FormDialog)

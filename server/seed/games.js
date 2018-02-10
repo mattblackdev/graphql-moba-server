@@ -6,7 +6,7 @@ const skills = [
   {
     _id: 'bruiserBash',
     name: 'Bruiser Bash',
-    classes: ['warrior'], // reference
+    classIds: ['warrior'], // reference
     description: 'Bashes a single foe',
     cooldown: 5,
   },
@@ -17,7 +17,7 @@ const classes = [
     _id: 'warrior',
     name: 'Warrior',
     description: 'Mighty, tank-y and mighty tank-y.',
-    skills: ['bruiserBash'], // reference
+    skillIds: ['bruiserBash'], // reference
     health: Ratings.SPECTACULAR,
     attack: Ratings.DECENT,
     defense: Ratings.GREAT,

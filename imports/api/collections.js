@@ -14,6 +14,14 @@ export const Locations = c('locations')
 
 if (Meteor.isServer) {
   Meteor.startup(() => {
+    Meteor.publish('classes', function() {
+      return Classes.find({})
+    })
+
+    Meteor.publish('skills', function() {
+      return Skills.find({})
+    })
+
     Meteor.publish('allGames', function() {
       return Games.find({})
     })
