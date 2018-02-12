@@ -16,7 +16,7 @@ const query = gql`
   }
 `
 
-const mySecret = 'wRPZ9nDaLZQbwC6Hr9e4834bfe85056b77bae75e5'
+const mySecret = '5PR2NgoWLfWdqwpCHfd45a023ace7d2d565f2e163'
 // Puts your secret on every graphql request
 export const playerLink = new ApolloLink((operation, forward) => {
   operation.setContext(() => ({
