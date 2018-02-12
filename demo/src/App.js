@@ -30,7 +30,7 @@ export const playerLink = new ApolloLink((operation, forward) => {
 
 const client = new ApolloClient({
   link: playerLink.concat(
-    new HttpLink({ uri: 'http://localhost:3002/graphql' })
+    new HttpLink({ uri: 'http://localhost:3000/graphql' })
   ), // Talk to the backend
   cache: new InMemoryCache(),
 })

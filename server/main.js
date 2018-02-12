@@ -26,15 +26,21 @@ const schema = makeExecutableSchema(getSchema())
 
 createApolloServer(
   req => {
+    let context = {}
     const playerToken = req.headers['player-token']
-    const userId = playerToken.substring(0, 17)
-    const user = Meteor.users.findOne(userId)
+    if (playerToken && playerToken.length > 17) {
+      const userId = playerToken.substring(0, 17)
+      const user = Meteor.users.findOne(userId)
+      if (user) {
+        context = {
+          user,
+          userId,
+        }
+      }
+    }
     return {
       schema,
-      context: {
-        userId: user._id,
-        user,
-      },
+      context,
     }
   },
   {
