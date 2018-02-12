@@ -111,22 +111,47 @@ const Player = Astro.Class.create({
   },
 })
 
+export const Location = Astro.Class.create({
+  name: 'Location',
+  fields: {
+    _id: idField,
+    name: {
+      type: String,
+      optional: true,
+    },
+    playerIds: {
+      type: [String],
+      default: () => [],
+    },
+  },
+})
+
+const Base = Astro.Class.create({
+  name: 'Base',
+  fields: {
+    _id: idField,
+    location: {
+      type: String,
+      optional: true,
+    },
+    health: {
+      type: Number,
+      default: 100,
+    },
+  },
+})
+
 const Team = Astro.Class.create({
   name: 'Team',
   fields: {
     _id: idField,
     color: String,
-    // base: {
-    //   type: Base,
-    //   optional: true,
-    // },
+    base: {
+      type: Base,
+      default: () => new Base(),
+    },
   },
 })
-
-// export const Location = Class.create({
-//   name: 'Location',
-//   collection
-// })
 
 export const GameStatus = Astro.Enum.create({
   name: 'Game Status',
@@ -142,12 +167,12 @@ export const Game = Astro.Class.create({
   collection: Games,
   fields: {
     name: { type: String, default: 'New Game' },
-    teams: { type: [Team], default: () => [] }, // FK
+    teams: { type: [Team], default: () => [] },
     players: { type: [Player], default: () => [] },
     duration: { type: Number, default: 30 },
     startTime: { type: Date, optional: true },
     endTime: { type: Date, optional: true },
-    // locations: { type: [String], default: () => [] }, // FK
+    locations: { type: [String], default: () => [] }, // FK
   },
   helpers: {
     getStatus() {
@@ -201,6 +226,7 @@ export const Game = Astro.Class.create({
     },
     start() {
       this.throwIfLocked('Start game')
+      // create locations
       this.startTime = new Date()
       return this.save()
     },

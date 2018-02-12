@@ -4,11 +4,16 @@ import yup from 'yup'
 import Button from 'material-ui/Button'
 import AddIcon from 'material-ui-icons/Add'
 import EditIcon from 'material-ui-icons/Edit'
-import { InputLabel } from 'material-ui/Input'
-import { MenuItem } from 'material-ui/Menu'
-import { ListItemText } from 'material-ui/List'
-import { FormControl, FormHelperText } from 'material-ui/Form'
-import Select from 'material-ui/Select'
+import Grid from 'material-ui/Grid'
+import Typography from 'material-ui/Typography'
+import {
+  ExpansionPanelSummary,
+  ExpansionPanelDetails,
+  ExpansionPanelActions,
+} from 'material-ui/ExpansionPanel'
+import ExpandMoreIcon from 'material-ui-icons/ExpandMore'
+import Radio from 'material-ui/Radio'
+import { FormHelperText } from 'material-ui/Form'
 import Table, {
   TableBody,
   TableCell,
@@ -16,11 +21,80 @@ import Table, {
   TableRow,
 } from 'material-ui/Table'
 
+import capitilize from '/imports/utils/capitilize'
 import FormDialog from './FormDialog'
+import DarkExpansionPanel from './DarkExpansionPanel'
 
 const schema = yup.object().shape({
   clazz: yup.string().required('You must make a selection!'),
 })
+
+function TableSection({ title, children }) {
+  return (
+    <Fragment>
+      <Typography variant="subheading">{title}</Typography>
+      <div style={{ overflowX: 'scroll', marginBottom: 16 }}>{children}</div>
+    </Fragment>
+  )
+}
+
+function StatsTable({ clazz }) {
+  return (
+    <TableSection title="Stats">
+      <Table>
+        <TableHead>
+          <TableRow>
+            <TableCell>Stat</TableCell>
+            <TableCell>Rating</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          <TableRow>
+            <TableCell>Health</TableCell>
+            <TableCell>{capitilize(clazz.health)}</TableCell>
+          </TableRow>
+          <TableRow>
+            <TableCell>Attack</TableCell>
+            <TableCell>{capitilize(clazz.attack)}</TableCell>
+          </TableRow>
+          <TableRow>
+            <TableCell>Defense</TableCell>
+            <TableCell>{capitilize(clazz.defense)}</TableCell>
+          </TableRow>
+          <TableRow>
+            <TableCell>Speed</TableCell>
+            <TableCell>{capitilize(clazz.speed)}</TableCell>
+          </TableRow>
+        </TableBody>
+      </Table>
+    </TableSection>
+  )
+}
+
+function SkillsTable({ skills }) {
+  return (
+    <TableSection title="Skills">
+      <Table style={{ minWidth: 500 }}>
+        <TableHead>
+          <TableRow>
+            <TableCell padding="dense">Name</TableCell>
+            <TableCell>Description</TableCell>
+            <TableCell padding="dense">Cooldown (s)</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {skills.map(skill => (
+            <TableRow key={skill._id}>
+              <TableCell padding="dense">{skill.name}</TableCell>
+              <TableCell>{skill.description}</TableCell>
+              <TableCell padding="dense">{skill.cooldown}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </TableSection>
+  )
+}
 
 class ClassSelectionDialog extends Component {
   handleOpen = openWithState => () => {
@@ -53,61 +127,43 @@ class ClassSelectionDialog extends Component {
   renderFields = ({ values, errors, touched, handleChange }) => {
     const error = touched.clazz && !!errors.clazz
     const { clazzes } = this.props
-    const selectedClass = clazzes.find(clazz => values.clazz === clazz._id)
     return (
       <Fragment>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Name</TableCell>
-              <TableCell>Skills</TableCell>
-              <TableCell>Health</TableCell>
-              <TableCell>Attack</TableCell>
-              <TableCell>Defense</TableCell>
-              <TableCell>Speed</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {clazzes.map(c => {
-              return (
-                <TableRow key={c._id}>
-                  <TableCell>{c.name}</TableCell>
-                  <TableCell>skills</TableCell>
-                  <TableCell>{c.health}</TableCell>
-                  <TableCell>{c.attack}</TableCell>
-                  <TableCell>{c.defense}</TableCell>
-                  <TableCell>{c.speed}</TableCell>
-                </TableRow>
-              )
-            })}
-          </TableBody>
-        </Table>
-        <FormControl error={error} fullWidth>
-          <InputLabel htmlFor="clazz">Class</InputLabel>
-          <Select
-            value={values.clazz}
-            onChange={handleChange}
-            inputProps={{
-              name: 'clazz',
-              id: 'clazz',
-            }}
-          >
-            <MenuItem value="">
-              <em>None</em>
-            </MenuItem>
-            {clazzes.map(clazz => (
-              <MenuItem key={clazz._id} value={clazz._id}>
-                <ListItemText
-                  primary={clazz.name}
-                  secondary={clazz.description}
+        {clazzes.map(clazz => {
+          const selected = clazz._id === values.clazz
+          const skills = this.props.skills.filter(skill =>
+            clazz.skillIds.includes(skill._id)
+          )
+          return (
+            <DarkExpansionPanel key={clazz._id} defaultExpanded={selected}>
+              <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
+                <Typography
+                  color={selected ? 'secondary' : undefined}
+                  variant="title"
+                  style={{ flex: 1, alignSelf: 'center' }}
+                >
+                  {clazz.name}
+                </Typography>
+                <Radio
+                  checked={selected}
+                  name="clazz"
+                  onChange={handleChange}
+                  value={clazz._id}
                 />
-              </MenuItem>
-            ))}
-          </Select>
-          <FormHelperText>
-            {error ? errors.clazz : 'Choose wisely'}
-          </FormHelperText>
-        </FormControl>
+                <span />
+                {/* MUI applies extra padding to the last element in ExpansionPanelSummary */}
+              </ExpansionPanelSummary>
+              <ExpansionPanelDetails style={{ flexDirection: 'column' }}>
+                <Typography variant="caption" style={{ marginBottom: 20 }}>
+                  {clazz.description}
+                </Typography>
+                <StatsTable clazz={clazz} />
+                <SkillsTable skills={skills} />
+              </ExpansionPanelDetails>
+            </DarkExpansionPanel>
+          )
+        })}
+        {error && <FormHelperText error>{errors.clazz}</FormHelperText>}
       </Fragment>
     )
   }

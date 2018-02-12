@@ -10,18 +10,42 @@ const skills = [
     description: 'Bashes a single foe',
     cooldown: 5,
   },
+  {
+    _id: 'giantShield',
+    name: 'Giant Shield',
+    classIds: ['warrior'], // reference
+    description: 'Protects you or an ally from the next received attack',
+    cooldown: 30,
+  },
+  {
+    _id: 'swiftSlice',
+    name: 'Swift Slice',
+    classIds: ['ninja'], // reference
+    description: 'Slice and dice an opponent',
+    cooldown: 5,
+  },
 ]
 
 const classes = [
   {
     _id: 'warrior',
     name: 'Warrior',
-    description: 'Mighty, tank-y and mighty tank-y.',
-    skillIds: ['bruiserBash'], // reference
+    description: 'The humble yet mighty, mighty tank.',
+    skillIds: ['bruiserBash', 'giantShield'], // reference
     health: Ratings.SPECTACULAR,
     attack: Ratings.DECENT,
     defense: Ratings.GREAT,
     speed: Ratings.POOR,
+  },
+  {
+    _id: 'ninja',
+    name: 'Ninja',
+    description: 'I guess ninjas are stealthy assassins',
+    skillIds: ['swiftSlice'], // reference
+    health: Ratings.POOR,
+    attack: Ratings.SPECTACULAR,
+    defense: Ratings.DECENT,
+    speed: Ratings.SPECTACULAR,
   },
 ]
 

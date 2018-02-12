@@ -1,1 +1,2 @@
-export default string => string.replace(/\b\w/g, l => l.toUpperCase())
+export default string =>
+  string.toLowerCase().replace(/\b\w/g, l => l.toUpperCase())

@@ -1,28 +1,23 @@
-import React, { Fragment, Component } from 'react'
+import React, { Fragment } from 'react'
 import moment from 'moment'
 import Typography from 'material-ui/Typography'
-import Grid from 'material-ui/Grid'
-import IconButton from 'material-ui/IconButton'
 import Button from 'material-ui/Button'
 import Card, { CardActions, CardContent } from 'material-ui/Card'
-import Toolbar from 'material-ui/Toolbar'
-import Paper from 'material-ui/Paper'
-import AddIcon from 'material-ui-icons/Add'
 import Chip from 'material-ui/Chip'
-import ExpansionPanel, {
+import {
   ExpansionPanelSummary,
   ExpansionPanelDetails,
   ExpansionPanelActions,
 } from 'material-ui/ExpansionPanel'
 import ExpandMoreIcon from 'material-ui-icons/ExpandMore'
 import Divider from 'material-ui/Divider'
-import { withStyles } from 'material-ui/styles'
 
 import capitilize from '/imports/utils/capitilize'
 import { GameStatus } from '/imports/api/classes'
 import Interval from './Interval'
 import TeamDialog from './TeamDialog'
 import ClassSelectionDialog from './ClassSelectionDialog'
+import DarkExpansionPanel from './DarkExpansionPanel'
 
 function GameStatusBar(props) {
   const { game } = props
@@ -47,12 +42,8 @@ function GameStatusBar(props) {
   }
 }
 
-const Teams = withStyles(theme => ({
-  expansionPanel: {
-    backgroundColor: theme.palette.primary.dark,
-  },
-}))(props => {
-  const { game, classes } = props
+const Teams = props => {
+  const { game } = props
   const player = game.getUserPlayer()
   return (
     <Fragment>
@@ -64,11 +55,7 @@ const Teams = withStyles(theme => ({
       {game.teams.map(team => {
         const isMyTeam = player && player.teamId === team._id
         return (
-          <ExpansionPanel
-            key={team._id}
-            className={classes.expansionPanel}
-            defaultExpanded={isMyTeam}
-          >
+          <DarkExpansionPanel key={team._id} defaultExpanded={isMyTeam}>
             <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
               <Typography style={{ color: team.color }}>
                 {capitilize(team.color)} team
@@ -93,12 +80,12 @@ const Teams = withStyles(theme => ({
                 </Fragment>
               )}
             </ExpansionPanelActions>
-          </ExpansionPanel>
+          </DarkExpansionPanel>
         )
       })}
     </Fragment>
   )
-})
+}
 
 function PlayerChip(props) {
   const { player } = props
