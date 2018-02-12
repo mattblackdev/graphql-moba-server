@@ -73,6 +73,10 @@ const Player = Astro.Class.create({
   name: 'Player',
   fields: {
     _id: String,
+    secret: {
+      type: String,
+      optional: true,
+    },
     teamId: {
       type: String,
       optional: true,
@@ -227,6 +231,12 @@ export const Game = Astro.Class.create({
     start() {
       this.throwIfLocked('Start game')
       // create locations
+      this.players.forEach(player => {
+        if (!player.teamId || !player.class) {
+          throw new Meteor.Error('NOOP', 'Players not ready')
+        }
+        player.secret = new Mongo.ObjectID().valueOf()
+      })
       this.startTime = new Date()
       return this.save()
     },

@@ -19,6 +19,28 @@ import TeamDialog from './TeamDialog'
 import ClassSelectionDialog from './ClassSelectionDialog'
 import DarkExpansionPanel from './DarkExpansionPanel'
 
+function TimeRemaining(props) {
+  const { game } = props
+  return (
+    <Interval
+      interval={60000}
+      run={() => ({
+        time: moment(game.startTime)
+          .add(game.duration, 'minutes')
+          .fromNow(true),
+      })}
+      render={({ time }) => <Typography>{time} remaining</Typography>}
+    />
+  )
+}
+
+function PlayerSecret(props) {
+  const { game } = props
+  const player = game.getUserPlayer()
+  if (!player) return null
+  return <Typography>Secret: {player.secret}</Typography>
+}
+
 function GameStatusBar(props) {
   const { game } = props
   const status = game.getStatus()
@@ -27,15 +49,10 @@ function GameStatusBar(props) {
       return <Typography>Waiting</Typography>
     case GameStatus.STARTED:
       return (
-        <Interval
-          interval={60000}
-          run={() => ({
-            time: moment(game.startTime)
-              .add(game.duration, 'minutes')
-              .fromNow(true),
-          })}
-          render={({ time }) => <Typography>{time} remaining</Typography>}
-        />
+        <Fragment>
+          <TimeRemaining {...props} />
+          <PlayerSecret {...props} />
+        </Fragment>
       )
     default:
       return null
