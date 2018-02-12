@@ -1,7 +1,7 @@
 # Main type (the root of all queries)
 type Query {
   me: Player
-  games: [Game]
+  game: Game
   classes: [Class]
   skills: [Skill]
 }

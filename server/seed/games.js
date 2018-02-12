@@ -3,6 +3,7 @@ import { Classes, Skills, Items, Games } from '/imports/api/collections'
 import { Game, Team, Player, Class } from '/imports/api/classes'
 import Ratings from '/imports/api/ratings'
 import percentChance from '/imports/utils/percentChance'
+import { pubsub } from '/imports/api/pubsub'
 
 const skills = [
   {
@@ -98,4 +99,8 @@ export default () => {
   )
   console.log('users affected: ', usersAffected)
   // game.start() // Meteor method
+  Meteor.setInterval(() => {
+    console.log('publishing game change')
+    pubsub.publish('gameChanged', { gameChanged: game })
+  }, 5000)
 }

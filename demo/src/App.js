@@ -1,24 +1,18 @@
 import React, { Component } from 'react'
-import logo from './logo.svg'
-import './App.css'
 import { ApolloClient } from 'apollo-client'
 import { HttpLink } from 'apollo-link-http'
-import { ApolloLink } from 'apollo-link'
+import { ApolloLink, split } from 'apollo-link'
+import { WebSocketLink } from 'apollo-link-ws'
+import { getMainDefinition } from 'apollo-utilities'
 import { InMemoryCache } from 'apollo-cache-inmemory'
-import { ApolloProvider, graphql } from 'react-apollo'
-import gql from 'graphql-tag'
+import { ApolloProvider } from 'react-apollo'
 
-const query = gql`
-  query {
-    me {
-      _id
-    }
-  }  
-`
+import GameSubscription from './GameSubscription'
 
-const mySecret = '5PR2NgoWLfWdqwpCHfd45a023ace7d2d565f2e163'
-// Puts your secret on every graphql request
-export const playerLink = new ApolloLink((operation, forward) => {
+const mySecret = process.env.REACT_APP_PLAYER_TOKEN
+
+// This link puts your secret on every graphql request as an http header
+const playerTokenLink = new ApolloLink((operation, forward) => {
   operation.setContext(() => ({
     headers: {
       'player-token': mySecret,
@@ -28,22 +22,42 @@ export const playerLink = new ApolloLink((operation, forward) => {
   return forward(operation)
 })
 
-const client = new ApolloClient({
-  link: playerLink.concat(
-    new HttpLink({ uri: 'http://localhost:3000/graphql' })
-  ), // Talk to the backend
-  cache: new InMemoryCache(),
+// This is the main http link for graphql requests
+const httpLink = new HttpLink({ uri: 'http://localhost:3000/graphql' })
+
+// This is the subscription link
+const wsLink = new WebSocketLink({
+  uri: 'ws://localhost:3000/subscriptions',
+  options: {
+    reconnect: true,
+  },
 })
 
-const Query = graphql(query)(props => {
-  return <pre>{JSON.stringify(props, null, 2)}</pre>
+// using the ability to split links, you can send data to each link
+// depending on what kind of operation is being sent
+const link = split(
+  // split subscription
+  ({ query }) => {
+    const { kind, operation } = getMainDefinition(query)
+    return kind === 'OperationDefinition' && operation === 'subscription'
+  },
+  wsLink, // If above condition is true, apollo will use the subscription link
+  playerTokenLink.concat(httpLink) // Else it uses the combined playerTokenLink & httpLink
+)
+
+// This is the apollo client that we pass to <ApolloProvider />
+const client = new ApolloClient({
+  link, // here's the link we created above
+  cache: new InMemoryCache(), // The cache is where apollo will store our data
 })
 
 class App extends Component {
   render() {
     return (
       <ApolloProvider client={client}>
-        <Query />
+        <GameSubscription>
+          {renderProps => <pre>{JSON.stringify(renderProps, null, 2)}</pre>}
+        </GameSubscription>
       </ApolloProvider>
     )
   }

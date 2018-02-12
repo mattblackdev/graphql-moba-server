@@ -3,14 +3,17 @@ import { createApolloServer } from 'meteor/apollo'
 import { initAccounts } from 'meteor/nicolaslopezj:apollo-accounts'
 import { loadSchema, getSchema } from 'graphql-loader'
 import { makeExecutableSchema } from 'graphql-tools'
+import { SubscriptionServer } from 'subscriptions-transport-ws'
+import { WebApp } from 'meteor/webapp'
+import { execute, subscribe } from 'graphql'
 import cors from 'cors'
+
+import '/imports/api/collections'
+import { Game } from '/imports/api/classes'
+
 import typeDefs from './schema'
 import resolvers from './resolvers'
 import './seed'
-
-import { Games } from '/imports/api/collections.js';
-
-import '/imports/api/collections'
 
 // Load all accounts related resolvers and type definitions into graphql-loader
 initAccounts({
@@ -33,9 +36,8 @@ createApolloServer(
     if (playerToken && playerToken.length > 17) {
       const userId = playerToken.substring(0, 17)
       const user = Meteor.users.findOne(userId)
-      const game = Games.findOne(user.gameId);
-      const player = game.players.find((player) => player._id === userId
-      )
+      const game = user ? Game.findOne(user.gameId) : null
+      const player = game ? game.players.find(p => p._id === userId) : null
       if (user) {
         context = {
           user,
@@ -43,7 +45,7 @@ createApolloServer(
           player,
           game,
         }
-        console.log("context", context);
+        console.log('context', context)
       }
     }
     return {
@@ -56,5 +58,17 @@ createApolloServer(
       graphQLServer.use(cors())
     },
     graphiql: true,
+  }
+)
+
+const subscriptionServer = new SubscriptionServer(
+  {
+    schema,
+    execute,
+    subscribe,
+  },
+  {
+    server: WebApp.httpServer,
+    path: '/subscriptions',
   }
 )
