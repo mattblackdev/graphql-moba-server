@@ -13,7 +13,7 @@ const query = gql`
     me {
       _id
     }
-  } 
+  }  
 `
 
 const mySecret = '5PR2NgoWLfWdqwpCHfd45a023ace7d2d565f2e163'
