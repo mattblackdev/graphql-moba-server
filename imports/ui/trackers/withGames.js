@@ -20,18 +20,10 @@ export default withTracker(({ user }) => {
       }
       return a.startTime < b.startTime ? 1 : -1
     })
-  let props = {}
-  if (user) {
-    // const players = Players.find({}).fetch()
-    const admin = Roles.userIsInRole(user, ['admin'], 'default-group')
-    props = {
-      // players,
-      admin,
-      newGame: name => new Game().create(name),
-    }
-  }
+
+  const admin = Roles.userIsInRole(user, ['admin'], 'default-group')
   return {
-    ...props,
+    admin,
     loggingIn: Meteor.loggingIn(),
     classesReady: clazzesSub.ready(),
     skillsReady: skillsSub.ready(),

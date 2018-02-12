@@ -102,8 +102,8 @@ class ClassSelectionDialog extends Component {
     const player = game.getUserPlayer()
 
     openWithState({
-      title: 'Class Selection',
-      contentText: 'Choose your class',
+      title: 'Choose your class',
+      contentText: '',
       validationSchema: schema,
       initialValues: {
         clazz: player.class ? player.class._id : '',
@@ -135,8 +135,17 @@ class ClassSelectionDialog extends Component {
             clazz.skillIds.includes(skill._id)
           )
           return (
-            <DarkExpansionPanel key={clazz._id} defaultExpanded={selected}>
+            <DarkExpansionPanel key={clazz._id}>
               <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
+                <Radio
+                  checked={selected}
+                  name="clazz"
+                  onClick={e => {
+                    e.stopPropagation()
+                  }}
+                  onChange={handleChange}
+                  value={clazz._id}
+                />
                 <Typography
                   color={selected ? 'secondary' : undefined}
                   variant="title"
@@ -144,12 +153,6 @@ class ClassSelectionDialog extends Component {
                 >
                   {clazz.name}
                 </Typography>
-                <Radio
-                  checked={selected}
-                  name="clazz"
-                  onChange={handleChange}
-                  value={clazz._id}
-                />
                 <span />
                 {/* MUI applies extra padding to the last element in ExpansionPanelSummary */}
               </ExpansionPanelSummary>

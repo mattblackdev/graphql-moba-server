@@ -1,10 +1,10 @@
 import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import * as Astro from 'meteor/jagi:astronomy'
-import { Roles } from 'meteor/alanning:roles'
 import { DDP } from 'meteor/ddp-client'
 
 import { Games, Classes, Skills } from './collections'
+import userIsAdmin from './userIsAdmin'
 
 function getUserId() {
   // eslint-disable-next-line no-underscore-dangle
@@ -69,7 +69,7 @@ const statField = {
 //   optional: true,
 // }
 
-const Player = Astro.Class.create({
+export const Player = Astro.Class.create({
   name: 'Player',
   fields: {
     _id: String,
@@ -130,7 +130,7 @@ export const Location = Astro.Class.create({
   },
 })
 
-const Base = Astro.Class.create({
+export const Base = Astro.Class.create({
   name: 'Base',
   fields: {
     _id: idField,
@@ -145,7 +145,7 @@ const Base = Astro.Class.create({
   },
 })
 
-const Team = Astro.Class.create({
+export const Team = Astro.Class.create({
   name: 'Team',
   fields: {
     _id: idField,
@@ -153,6 +153,19 @@ const Team = Astro.Class.create({
     base: {
       type: Base,
       default: () => new Base(),
+    },
+    ownerId: String, // FK to userId who created the game
+  },
+  helpers: {
+    throwIfNotOwner(operationName) {
+      if (this.ownerId !== getUserId()) {
+        throw new Meteor.Error(
+          'NOOP',
+          `Operation: ${operationName} can not be performed on game: ${
+            this.name
+          } ${this._id} because you are not the owner.`
+        )
+      }
     },
   },
 })
@@ -177,6 +190,7 @@ export const Game = Astro.Class.create({
     startTime: { type: Date, optional: true },
     endTime: { type: Date, optional: true },
     locations: { type: [String], default: () => [] }, // FK
+    ownerId: String, // FK to userId who created the game
   },
   helpers: {
     getStatus() {
@@ -200,6 +214,27 @@ export const Game = Astro.Class.create({
         )
       }
     },
+    throwIfNotLocked(operationName) {
+      if (!this.isLocked()) {
+        throw new Meteor.Error(
+          'NOOP',
+          `Operation: ${operationName} can not be performed on game: ${
+            this.name
+          } ${this._id} because it has not started.`
+        )
+      }
+    },
+    throwIfNotOwnerOrAdmin(operationName) {
+      if (userIsAdmin()) return
+      if (this.ownerId !== getUserId()) {
+        throw new Meteor.Error(
+          'NOT_AUTHORIZED',
+          `Operation: ${operationName} can not be performed on game: ${
+            this.name
+          } ${this._id} because you are not the owner.`
+        )
+      }
+    },
     playersInLobby() {
       return this.players.filter(player => !player.teamId)
     },
@@ -210,26 +245,23 @@ export const Game = Astro.Class.create({
       return this.players.find(player => player._id === Meteor.userId())
     },
     getTeam(teamId) {
-      const team = this.teams.find(t => teamId === t._id)
-      if (!team) {
-        throw new Error(`Could not find team: ${teamId} for game: ${this._id}`)
-      }
-      return team
+      return this.teams.find(t => teamId === t._id)
     },
     getPlayer(userId) {
-      const player = this.players.find(p => p._id === userId)
-      if (!player) throw new Error(`User is not a player of game ${this._id}`)
-      return player
+      return this.players.find(p => p._id === userId)
     },
   },
   meteorMethods: {
     create(name, duration) {
+      console.log('create', name)
       if (name) this.name = name
       if (duration) this.duration = duration
+      this.ownerId = getUserId()
       return this.save()
     },
     start() {
       this.throwIfLocked('Start game')
+      this.throwIfNotOwnerOrAdmin('Start game')
       // create locations
       this.players.forEach(player => {
         if (!player.teamId || !player.class) {
@@ -240,58 +272,60 @@ export const Game = Astro.Class.create({
       this.startTime = new Date()
       return this.save()
     },
-    join() {
-      this.throwIfLocked('Join game')
-      const userId = getUserId()
-      Meteor.users.update(userId, { $set: { gameId: this._id } })
-      this.players.push(new Player({ _id: userId }))
+    stop() {
+      this.throwIfNotLocked('Stop game')
+      this.throwIfNotOwnerOrAdmin('Stop game')
+      this.endTime = new Date()
       return this.save()
     },
     addTeam(color) {
       this.throwIfLocked('Add team')
-      const team = new Team({ color })
+      const team = new Team({ color, ownerId: getUserId() })
       this.teams.push(team)
-      return this.save()
+      this.save()
+      return this.joinTeam(team._id)
     },
     joinTeam(teamId) {
       this.getTeam(teamId) // check team exists on this game
       this.throwIfLocked('Join team')
       let player = this.getUserPlayer()
-      if (!player) {
-        const userId = getUserId()
-        Meteor.users.update(userId, { $set: { gameId: this._id } })
-        player = new Player({ _id: userId, teamId })
-        this.players.push(player)
-      } else {
+      if (player) {
         player.teamId = teamId
+      } else {
+        const user = Meteor.user()
+        if (!user) {
+          throw new Meteor.Error('NOT_AUTHORIZED', 'User is not logged in.')
+        }
+        if (user.gameId) {
+          // User is in a game already. Remove them.
+          const currentGame = Game.findOne(user.gameId)
+          if (currentGame) {
+            try {
+              currentGame.leaveTeam()
+            } catch (e) {
+              // do nothing
+            }
+          }
+        }
+        Meteor.users.update(user._id, { $set: { gameId: this._id } })
+        player = new Player({ _id: user._id, teamId })
+        this.players.push(player)
       }
       return this.save()
     },
-    leaveTeam() {
-      const player = this.getUserPlayer()
-      player.teamId = null
-      return this.save()
-    },
-    disbandTeam(teamId) {
-      this.getTeam(teamId) // check team exists on this game
-      // if (this.isLocked()) {
-      //   team.setForfeit()
-      // }
-      this.playersOnTeam(teamId).forEach(player => {
-        player.teamId = null
-      })
-      this.teams = this.teams.filter(team => team._id !== teamId)
-      return this.save()
-    },
     leaveGame() {
-      const userId = getUserId()
-      this.getPlayer(userId) // check player exists on this game
-      // if (this.isLocked()) {
-      //   player.setForfeit()
-      // }
-      this.players = this.players.filter(p => p._id !== userId)
-      Meteor.users.update(userId, { $set: { gameId: null } })
-      this.save()
+      const player = this.getUserPlayer()
+      if (!player) {
+        throw new Meteor.Error(
+          'NOOP',
+          `There is not a player in game: ${
+            this.name
+          } for user ${Meteor.userId()}`
+        )
+      }
+      this.players.splice(this.players.indexOf(player), 1)
+      Meteor.users.update(player._id, { $set: { gameId: null } })
+      return this.save()
     },
     setClass(clazzId) {
       const player = this.getUserPlayer()

@@ -60,15 +60,14 @@ function GameStatusBar(props) {
 }
 
 const Teams = props => {
-  const { game } = props
+  const { game, gameIsLocked } = props
   const player = game.getUserPlayer()
   return (
     <Fragment>
       <Typography>Teams</Typography>
-      {!game.isLocked() &&
-        (props.admin || player) && (
-          <TeamDialog addTeam={(...args) => game.addTeam(...args)} />
-        )}
+      {!gameIsLocked && (
+        <TeamDialog addTeam={(...args) => game.addTeam(...args)} />
+      )}
       {game.teams.map(team => {
         const isMyTeam = player && player.teamId === team._id
         return (
@@ -85,11 +84,9 @@ const Teams = props => {
             </ExpansionPanelDetails>
             <Divider />
             <ExpansionPanelActions>
-              {!game.isLocked() && (
+              {!gameIsLocked && (
                 <Fragment>
-                  {player && player.teamId === team._id ? (
-                    <Button onClick={() => game.leaveTeam()}>Leave</Button>
-                  ) : (
+                  {!isMyTeam && (
                     <Button onClick={() => game.joinTeam(team._id)}>
                       Join
                     </Button>
@@ -113,48 +110,51 @@ function PlayerChip(props) {
   return <Chip label={label} style={{ margin: 8 }} />
 }
 
-function Lobby(props) {
-  const { game } = props
-  return (
-    <Fragment>
-      <Typography>Lobby: {game.playersInLobby().length}</Typography>
-      <div style={{ display: 'flex', flexWrap: 'wrap' }}>
-        {game
-          .playersInLobby()
-          .map(player => <PlayerChip key={player._id} player={player} />)}
-      </div>
-    </Fragment>
-  )
-}
-
 function GameContent(props) {
-  const { game } = props
+  const { game, gameIsMine } = props
   return (
     <CardContent>
-      <Typography>{game.name}</Typography>
+      <Typography
+        variant="subheading"
+        color={gameIsMine ? 'secondary' : undefined}
+      >
+        {game.name}
+      </Typography>
       <GameStatusBar {...props} />
       <Teams {...props} />
-      <Lobby {...props} />
     </CardContent>
   )
 }
 
+const GameOwnerButtons = ({ game, gameIsLocked, admin, isGameOwner }) => {
+  if (!admin && !isGameOwner) return null
+  if (gameIsLocked) {
+    return (
+      <Button
+        onClick={() => {
+          if (window.confirm('Kill this game?')) {
+            game.stop()
+          }
+        }}
+      >
+        Kill
+      </Button>
+    )
+  }
+  return <Button onClick={() => game.start()}>Start</Button>
+}
+
 function Game(props) {
-  const { game } = props
+  const { game, gameIsMine, gameIsLocked } = props
   return (
-    <Card>
+    <Card style={{ maxWidth: 800 }}>
       <GameContent {...props} />
       <CardActions>
-        {props.admin &&
-          !game.startTime && (
-            <Button onClick={() => game.start()}>Start</Button>
-          )}
-        {!props.user.gameId &&
-          !game.startTime && <Button onClick={() => game.join()}>Join</Button>}
-        {props.user.gameId === game._id && (
+        <GameOwnerButtons {...props} />
+        {gameIsMine && (
           <Fragment>
             <Button onClick={() => game.leaveGame()}>Leave</Button>
-            {!game.isLocked() && <ClassSelectionDialog {...props} />}
+            {!gameIsLocked && <ClassSelectionDialog {...props} />}
           </Fragment>
         )}
       </CardActions>

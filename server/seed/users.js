@@ -2,26 +2,27 @@ import { Meteor } from 'meteor/meteor'
 import { Accounts } from 'meteor/accounts-base'
 import { Roles } from 'meteor/alanning:roles'
 
+export const users = [
+  {
+    email: 'mb@mattblack.io',
+    password: 'password',
+    username: 'mb',
+    roles: ['admin'],
+  },
+  {
+    username: 'joeshmoe',
+    password: 'password',
+  },
+  {
+    username: 'zee',
+    password: '12345678',
+    roles: ['admin'],
+  },
+]
+
 export default () => {
   console.log('seeding users...')
   // Meteor.users.remove({})
-  const users = [
-    {
-      email: 'mb@mattblack.io',
-      password: 'password',
-      username: 'mb',
-      roles: ['admin'],
-    },
-    {
-      username: 'joeshmoe',
-      password: 'password',
-    },
-    {
-      username: 'zee',
-      password: '12345678',
-      roles: ['admin'],
-    },
-  ]
 
   users.forEach(user => {
     const userExists = Meteor.users.findOne({ username: user.username })

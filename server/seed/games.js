@@ -1,6 +1,8 @@
+import { Meteor } from 'meteor/meteor'
 import { Classes, Skills, Items, Games } from '/imports/api/collections'
-import { Game } from '/imports/api/classes'
+import { Game, Team, Player, Class } from '/imports/api/classes'
 import Ratings from '/imports/api/ratings'
+import percentChance from '/imports/utils/percentChance'
 
 const skills = [
   {
@@ -66,8 +68,34 @@ export default () => {
   upsert(skills, Skills)
   console.log('seeding game...')
   Games.remove({})
-  const game = new Game()
-  game.create('Test Game', 30, (err, result) => {
-    console.log('results', err, result)
+  const joeshmoe = Meteor.users.findOne({ username: 'joeshmoe' })
+  const game = new Game({
+    name: 'Seed Game',
+    duration: 30,
+    ownerId: joeshmoe._id,
   })
+  const redTeam = new Team({ color: 'red', ownerId: joeshmoe._id })
+  const blueTeam = new Team({ color: 'blue', ownerId: joeshmoe._id })
+  game.teams.push(redTeam)
+  game.teams.push(blueTeam)
+  game.players = Meteor.users
+    .find({})
+    .fetch()
+    .map(
+      user =>
+        new Player({
+          _id: user._id,
+          teamId: percentChance(50) ? redTeam._id : blueTeam._id,
+          class: classes[percentChance(50) ? 0 : 1],
+        })
+    )
+  game.save()
+  const gameId = game._id
+  const usersAffected = Meteor.users.update(
+    {},
+    { $set: { gameId } },
+    { multi: true }
+  )
+  console.log('users affected: ', usersAffected)
+  // game.start() // Meteor method
 }

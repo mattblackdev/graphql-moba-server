@@ -5,6 +5,8 @@ import IconButton from 'material-ui/IconButton'
 import Toolbar from 'material-ui/Toolbar'
 import AddIcon from 'material-ui-icons/Add'
 
+import capitilize from '/imports/utils/capitilize'
+import { Game as G4me } from '/imports/api/classes'
 import withGames from '../trackers/withGames'
 import Game from './Game'
 
@@ -25,28 +27,39 @@ function PublicHome() {
 }
 
 function GameList(props) {
-  const { games, ...rest } = props
+  const { games, user, ...rest } = props
   return (
     <Fragment>
       <Toolbar style={{ marginBottom: 8, marginTop: 8 }}>
         <Typography variant="headline" style={{ flex: 1 }}>
           Games
         </Typography>
-        {props.admin && (
-          <IconButton onClick={() => props.newGame('Hello')}>
-            <AddIcon />
-          </IconButton>
-        )}
+        <IconButton
+          onClick={() =>
+            new G4me().create(`${capitilize(user.username)}'s Game`)
+          }
+        >
+          <AddIcon />
+        </IconButton>
       </Toolbar>
-      <div style={{ padding: '12px' }}>
-        <Grid container spacing={24}>
-          {props.games.map(game => (
-            <Grid item xs={12} key={game._id}>
-              <Game {...rest} game={game} />
-            </Grid>
-          ))}
-        </Grid>
-      </div>
+      <Grid container spacing={0} justify="center">
+        {props.games.map(game => (
+          <Grid
+            item
+            xs={12}
+            style={{ marginBottom: 48, maxWidth: 600 }}
+            key={game._id}
+          >
+            <Game
+              {...rest}
+              game={game}
+              gameIsLocked={game.isLocked()}
+              gameIsMine={user.gameId === game._id}
+              gameIsOwnedByMe={user._id === game.ownerId}
+            />
+          </Grid>
+        ))}
+      </Grid>
     </Fragment>
   )
 }
