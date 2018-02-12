@@ -235,7 +235,7 @@ export const Game = Astro.Class.create({
         if (!player.teamId || !player.class) {
           throw new Meteor.Error('NOOP', 'Players not ready')
         }
-        player.secret = new Mongo.ObjectID().valueOf()
+        player.secret = `${player._id}${new Mongo.ObjectID().valueOf()}`
       })
       this.startTime = new Date()
       return this.save()

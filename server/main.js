@@ -1,4 +1,5 @@
-import { setup as createApolloServer } from 'meteor/swydo:ddp-apollo'
+import { Meteor } from 'meteor/meteor'
+import { createApolloServer } from 'meteor/apollo'
 import { initAccounts } from 'meteor/nicolaslopezj:apollo-accounts'
 import { loadSchema, getSchema } from 'graphql-loader'
 import { makeExecutableSchema } from 'graphql-tools'
@@ -24,8 +25,17 @@ loadSchema({ typeDefs, resolvers })
 const schema = makeExecutableSchema(getSchema())
 
 createApolloServer(
-  {
-    schema,
+  req => {
+    const playerToken = req.headers['player-token']
+    const userId = playerToken.substring(0, 17)
+    const user = Meteor.users.findOne(userId)
+    return {
+      schema,
+      context: {
+        userId: user._id,
+        user,
+      },
+    }
   },
   {
     configServer(graphQLServer) {

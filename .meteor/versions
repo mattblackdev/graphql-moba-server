@@ -3,6 +3,7 @@ accounts-oauth@1.1.15
 accounts-password@1.5.0
 alanning:roles@1.2.16
 allow-deny@1.1.0
+apollo@2.0.0
 autoupdate@1.4.0
 babel-compiler@7.0.0
 babel-runtime@1.2.2
