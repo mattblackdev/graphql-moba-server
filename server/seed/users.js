@@ -16,6 +16,11 @@ export default () => {
       username: 'joeshmoe',
       password: 'password',
     },
+    {
+      username: 'zee',
+      password: '12345678',
+      roles: ['admin'],
+    },
   ]
 
   users.forEach(user => {

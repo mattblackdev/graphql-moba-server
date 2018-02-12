@@ -6,5 +6,6 @@ export function me(root, args, context) {
     throw new Error('Unknown User (not logged in)')
   }
   // find the user using the userId from the context
-  return Meteor.users.findOne(context.userId)
+  return context.player;
+  //return Meteor.users.findOne(context.userId)
 }

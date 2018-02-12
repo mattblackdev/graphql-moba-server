@@ -8,6 +8,8 @@ import typeDefs from './schema'
 import resolvers from './resolvers'
 import './seed'
 
+import { Games } from '/imports/api/collections.js';
+
 import '/imports/api/collections'
 
 // Load all accounts related resolvers and type definitions into graphql-loader
@@ -31,11 +33,17 @@ createApolloServer(
     if (playerToken && playerToken.length > 17) {
       const userId = playerToken.substring(0, 17)
       const user = Meteor.users.findOne(userId)
+      const game = Games.findOne(user.gameId);
+      const player = game.players.find((player) => player._id === userId
+      )
       if (user) {
         context = {
           user,
           userId,
+          player,
+          game,
         }
+        console.log("context", context);
       }
     }
     return {
