@@ -67,41 +67,41 @@ export default () => {
   upsert(classes, Classes)
   console.log('seeding skills...')
   upsert(skills, Skills)
-  console.log('seeding game...')
-  Games.remove({})
-  const joeshmoe = Meteor.users.findOne({ username: 'joeshmoe' })
-  const game = new Game({
-    name: 'Seed Game',
-    duration: 30,
-    ownerId: joeshmoe._id,
-  })
-  const redTeam = new Team({ color: 'red', ownerId: joeshmoe._id })
-  const blueTeam = new Team({ color: 'blue', ownerId: joeshmoe._id })
-  game.teams.push(redTeam)
-  game.teams.push(blueTeam)
-  game.players = Meteor.users
-    .find({})
-    .fetch()
-    .map(
-      user =>
-        new Player({
-          _id: user._id,
-          teamId: percentChance(50) ? redTeam._id : blueTeam._id,
-          class: classes[percentChance(50) ? 0 : 1],
-          name: user.username,
-        })
-    )
-  game.save()
-  const gameId = game._id
-  const usersAffected = Meteor.users.update(
-    {},
-    { $set: { gameId } },
-    { multi: true }
-  )
-  console.log('users affected: ', usersAffected)
+  // console.log('seeding game...')
+  // Games.remove({})
+  // const joeshmoe = Meteor.users.findOne({ username: 'joeshmoe' })
+  // const game = new Game({
+  //   name: 'Seed Game',
+  //   duration: 30,
+  //   ownerId: joeshmoe._id,
+  // })
+  // const redTeam = new Team({ color: 'red', ownerId: joeshmoe._id })
+  // const blueTeam = new Team({ color: 'blue', ownerId: joeshmoe._id })
+  // game.teams.push(redTeam)
+  // game.teams.push(blueTeam)
+  // game.players = Meteor.users
+  //   .find({})
+  //   .fetch()
+  //   .map(
+  //     user =>
+  //       new Player({
+  //         _id: user._id,
+  //         teamId: percentChance(50) ? redTeam._id : blueTeam._id,
+  //         class: classes[percentChance(50) ? 0 : 1],
+  //         name: user.username,
+  //       })
+  //   )
+  // game.save()
+  // const gameId = game._id
+  // const usersAffected = Meteor.users.update(
+  //   {},
+  //   { $set: { gameId } },
+  //   { multi: true }
+  // )
+  // console.log('users affected: ', usersAffected)
   // game.start() // Meteor method
-  Meteor.setInterval(() => {
-    // console.log('publishing game change')
-    pubsub.publish('gameChanged', { gameChanged: game })
-  }, 5000)
+  // Meteor.setInterval(() => {
+  //   // console.log('publishing game change')
+  //   pubsub.publish('gameChanged', { gameChanged: game })
+  // }, 5000)
 }
