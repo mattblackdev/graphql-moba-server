@@ -55,7 +55,7 @@ class App extends Component {
   render() {
     return (
       <ApolloProvider client={client}>
-        <GameSubscription>
+        <GameSubscription test="test">
           {renderProps => <pre>{JSON.stringify(renderProps, null, 2)}</pre>}
         </GameSubscription>
       </ApolloProvider>

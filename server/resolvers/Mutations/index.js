@@ -1,0 +1,1 @@
+export { attackPlayer } from './attackPlayer'

@@ -1,6 +1,5 @@
 import { Meteor } from 'meteor/meteor'
 import { createApolloServer } from 'meteor/apollo'
-import { initAccounts } from 'meteor/nicolaslopezj:apollo-accounts'
 import { loadSchema, getSchema } from 'graphql-loader'
 import { makeExecutableSchema } from 'graphql-tools'
 import { SubscriptionServer } from 'subscriptions-transport-ws'
@@ -14,14 +13,6 @@ import { Game } from '/imports/api/classes'
 import typeDefs from './schema'
 import resolvers from './resolvers'
 import './seed'
-
-// Load all accounts related resolvers and type definitions into graphql-loader
-initAccounts({
-  loginWithFacebook: false,
-  loginWithGoogle: false,
-  loginWithLinkedIn: false,
-  loginWithPassword: true,
-})
 
 // Load all your resolvers and type definitions into graphql-loader
 loadSchema({ typeDefs, resolvers })
@@ -45,7 +36,6 @@ createApolloServer(
           player,
           game,
         }
-        console.log('context', context)
       }
     }
     return {

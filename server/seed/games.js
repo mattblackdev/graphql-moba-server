@@ -88,6 +88,7 @@ export default () => {
           _id: user._id,
           teamId: percentChance(50) ? redTeam._id : blueTeam._id,
           class: classes[percentChance(50) ? 0 : 1],
+          name: user.username,
         })
     )
   game.save()
@@ -100,7 +101,7 @@ export default () => {
   console.log('users affected: ', usersAffected)
   // game.start() // Meteor method
   Meteor.setInterval(() => {
-    console.log('publishing game change')
+    // console.log('publishing game change')
     pubsub.publish('gameChanged', { gameChanged: game })
   }, 5000)
 }

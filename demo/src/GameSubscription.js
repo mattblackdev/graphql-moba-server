@@ -7,6 +7,11 @@ const GAME_QUERY = gql`
     game {
       _id
       name
+      players {
+        _id
+        name
+        health
+      }
     }
   }
 `
@@ -16,6 +21,11 @@ const GAME_SUBSCRIPTION = gql`
     gameChanged {
       _id
       name
+      players {
+        _id
+        name
+        health
+      }
     }
   }
 `

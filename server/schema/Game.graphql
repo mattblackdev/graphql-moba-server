@@ -6,38 +6,25 @@ type Game {
   duration: Int
   startTime: String
   endTime: String
-  locations: [Location]
 }
 
 type Team {
   _id: ID!
   color: String
-  players: [Player]!
-  base: Base!
-  kills: Int
-  xp: Int
-  gold: Int
 }
 
 type Player {
   _id: ID!
+  name: String!
   team: Team!
   class: Class!
-  location: Location!
   xp: Int!
   level: Int!
-  health: Int!
-  maxHealth: Int!
+  health: Int
   attack: Int!
-  defense: Int!
-  speed: Int!
   kills: Int!
-  gold: Int!
-  armor: Armor
-  weapon: Weapon
-  potions: [Potion]
-  unlocked: [String]
-  cooldowns: [Cooldown]
+  deaths: Int!
+  cooldown: Cooldown
 }
 
 type Class {
@@ -67,42 +54,16 @@ type Skill {
   cooldown: Int!
 }
 
-type Location {
-  _id: ID!
-  name: String!
-  players: [Player]
-}
-
-type Armor {
-  _id: ID!
-  level: Int!
-  defense: Int!
-  cost: Int!
-}
-
-type Weapon {
-  _id: ID!
-  level: Int!
-  attack: Int!
-  cost: Int!
-}
-
-type Potion {
-  _id: ID!
-  name: String!
-  health: Int!
-  cost: Int!
-}
-
 type Cooldown {
   _id: ID!
-  skill: [Skill]!
   endTime: String!
+  secondsRemaining: Int!
 }
 
-type Base {
-  _id: ID!
-  location: Location!
-  team: Team!
-  health: Int!
+type Attack {
+  success: Boolean!
+  damage: Int
+  cooldown: Cooldown
+  fromPlayer: Player!
+  toPlayer: Player
 }

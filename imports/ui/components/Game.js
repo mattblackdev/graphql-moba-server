@@ -104,9 +104,9 @@ const Teams = props => {
 function PlayerChip(props) {
   const { player } = props
   const { username } = player.getUser()
-  const clazzName = player.class ? `: ${player.class.name}` : ''
+  const clazzName = player.class ? ` [${player.class.name}]` : ''
 
-  const label = `${username}${clazzName}`
+  const label = `${username}${clazzName}: ${player.kills} kills`
   return <Chip label={label} style={{ margin: 8 }} />
 }
 

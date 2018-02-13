@@ -52,22 +52,76 @@ export const Class = Astro.Class.create({
     defense: Rating,
     speed: Rating,
   },
+  helpers: {
+    getHealthForLevel(level) {
+      switch (this.health) {
+        case Rating.POOR:
+          return 90 + level * 10
+        case Rating.DECENT:
+          return 100 + level * 12
+        case Rating.GREAT:
+          return 130 + level * 13
+        case Rating.SPECTACULAR:
+          return 150 + level * 15
+        default:
+          return 100
+      }
+    },
+    getAttackForLevel(level) {
+      switch (this.attack) {
+        case Rating.POOR:
+          return Math.floor(2 + level * 1.2)
+        case Rating.DECENT:
+          return Math.floor(5 + level * 1.3)
+        case Rating.GREAT:
+          return Math.floor(7 + level * 1.4)
+        case Rating.SPECTACULAR:
+          return Math.floor(10 + level * 1.5)
+        default:
+          return 0
+      }
+    },
+    getAttackCooldownForLevel(level) {
+      let seconds = 1
+      switch (this.speed) {
+        case Rating.POOR:
+          seconds = Math.floor(30 - level * 3)
+          break
+        case Rating.DECENT:
+          seconds = Math.floor(28 - level * 3.3)
+          break
+        case Rating.GREAT:
+          seconds = Math.floor(26 - level * 3.5)
+          break
+        case Rating.SPECTACULAR:
+          seconds = Math.floor(25 - level * 4)
+          break
+        default:
+          return 0
+      }
+      seconds = Math.max(1, seconds)
+      return new Date(new Date().getTime() + 1000 * seconds)
+    },
+  },
 })
-
-const zeroField = {
-  type: Number,
-  default: 0,
-}
-
-const statField = {
-  type: Number,
-  optional: true,
-}
 
 // const itemField = {
 //   type: Item,
 //   optional: true,
 // }
+
+export const Cooldown = Astro.Class.create({
+  name: 'Cooldown',
+  fields: {
+    _id: idField,
+    endTime: Date,
+  },
+  helpers: {
+    getSecondsRemaining() {
+      return Math.ceil((this.endTime.getTime() - new Date().getTime()) / 1000)
+    },
+  },
+})
 
 export const Player = Astro.Class.create({
   name: 'Player',
@@ -77,6 +131,7 @@ export const Player = Astro.Class.create({
       type: String,
       optional: true,
     },
+    name: String,
     teamId: {
       type: String,
       optional: true,
@@ -89,18 +144,38 @@ export const Player = Astro.Class.create({
     //   type: Location,
     //   optional: true,
     // },
-    xp: zeroField,
+    xp: {
+      type: Number,
+      default: 0,
+    },
     level: {
       type: Number,
       default: 1,
     },
-    health: statField,
-    maxHealth: statField,
-    attack: statField,
-    defense: statField,
-    speed: statField,
-    kills: zeroField,
-    gold: zeroField,
+    health: {
+      type: Number,
+      optional: true,
+    },
+    // maxHealth: statField,
+    attack: {
+      type: Number,
+      optional: true,
+    },
+    // defense: statField,
+    // speed: statField,
+    kills: {
+      type: Number,
+      default: 0,
+    },
+    deaths: {
+      type: Number,
+      default: 0,
+    },
+    cooldown: {
+      type: Cooldown,
+      optional: true,
+    },
+    // gold: zeroField,
     // armor: itemField,
     // weapon: itemField,
     // potions: {
@@ -111,6 +186,9 @@ export const Player = Astro.Class.create({
   helpers: {
     getUser() {
       return Meteor.users.findOne(this._id)
+    },
+    updateLevel() {
+      this.level = Math.max(1, Math.floor(this.xp / 100))
     },
   },
 })
@@ -250,6 +328,47 @@ export const Game = Astro.Class.create({
     getPlayer(userId) {
       return this.players.find(p => p._id === userId)
     },
+    attackPlayer(playerId, attackingPlayer) {
+      if (
+        attackingPlayer.cooldown &&
+        attackingPlayer.cooldown.endTime.getTime() > new Date().getTime()
+      ) {
+        return {
+          success: false,
+          cooldown: {
+            ...attackingPlayer.cooldown,
+            secondsRemaining: attackingPlayer.cooldown.getSecondsRemaining(),
+          },
+          fromPlayer: attackingPlayer,
+        }
+      }
+      attackingPlayer.cooldown = new Cooldown({
+        endTime: attackingPlayer.class.getAttackCooldownForLevel(
+          attackingPlayer.level
+        ),
+      })
+      const player = this.getPlayer(playerId)
+      player.health -= attackingPlayer.attack
+      attackingPlayer.xp += 10
+      if (player.health <= 0) {
+        player.deaths++
+        attackingPlayer.kills++
+        attackingPlayer.xp += 100
+        attackingPlayer.updateLevel()
+        player.health = player.class.getHealthForLevel(player.level)
+      }
+      this.save()
+      return {
+        success: true,
+        damage: attackingPlayer.attack,
+        cooldown: {
+          ...attackingPlayer.cooldown,
+          secondsRemaining: attackingPlayer.cooldown.getSecondsRemaining(),
+        },
+        fromPlayer: attackingPlayer,
+        toPlayer: player,
+      }
+    },
   },
   meteorMethods: {
     create(name, duration) {
@@ -268,9 +387,13 @@ export const Game = Astro.Class.create({
           throw new Meteor.Error('NOOP', 'Players not ready')
         }
         player.secret = `${player._id}${new Mongo.ObjectID().valueOf()}`
+        player.health = player.class.getHealthForLevel(player.level)
+        player.attack = player.class.getAttackForLevel(player.level)
       })
       this.startTime = new Date()
-      return this.save()
+      return this.save(err => {
+        if (err) console.log('Start game error', err)
+      })
     },
     stop() {
       this.throwIfNotLocked('Stop game')
@@ -308,7 +431,7 @@ export const Game = Astro.Class.create({
           }
         }
         Meteor.users.update(user._id, { $set: { gameId: this._id } })
-        player = new Player({ _id: user._id, teamId })
+        player = new Player({ _id: user._id, teamId, name: user.username })
         this.players.push(player)
       }
       return this.save()
